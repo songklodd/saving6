@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ระบบฝาก-ถอนเงินนักเรียน ป.6 (2569)</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    :root {
+      --color-primary: #6c5ce7;
+      --color-secondary: #00cec9;
+      --color-accent: #fd79a8;
+      --color-text: #2d3436;
+      --white: #ffffff;
+      --bg-container: rgba(255, 255, 255, 0.95);
+    }
+
+    body { 
+      background: linear-gradient(109.6deg, rgba(254,253,205,1) 11.2%, rgba(163,230,255,1) 91.1%);
+      background-attachment: fixed;
+      font-family: 'Kanit', sans-serif; /* เปลี่ยนฟอนต์หลักเป็น Kanit ทั้งหมด */
+      color: var(--color-text);
+    }
+
+    .main-container {
+      background-color: var(--bg-container);
+      border-radius: 20px;
+      padding: 35px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      margin-top: 40px;
+      margin-bottom: 40px;
+      border: 3px solid #ffffff;
+    }
+
+    h2 { font-weight: 700; color: #0984e3; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+    h4 { font-weight: 600; color: var(--color-primary); margin-bottom: 25px; display: inline-block; background: #dfe6e9; padding: 8px 20px; border-radius: 30px;}
+
+    .nav-tabs { border-bottom: 3px solid #ffeaa7; margin-bottom: 30px; }
+    .nav-tabs .nav-link { 
+      font-weight: 600; color: #636e72; 
+      cursor: pointer; border: none; padding: 10px 15px; border-radius: 15px 15px 0 0; transition: all 0.3s ease; font-size: 1.05rem;
+    }
+    .nav-tabs .nav-link:hover { background-color: #fffde7; color: var(--color-accent); transform: translateY(-2px); }
+    .nav-tabs .nav-link.active { color: var(--white); background-color: var(--color-accent); border-bottom: none; box-shadow: 0 -4px 10px rgba(253, 121, 168, 0.3); }
+
+    .content-section { display: none; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .content-section.active { display: block; }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+    .table-custom { border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .table-custom th { background-color: #74b9ff !important; color: var(--white) !important; font-weight: 600; border: none; }
+    .table-custom td { border-color: #f1f2f6; vertical-align: middle; }
+    .table-striped>tbody>tr:nth-of-type(odd)>* { background-color: #f8fbff; }
+    .table-striped>tbody>tr:hover>* { background-color: #e3f2fd; }
+
+    .summary-card { padding: 25px; border-radius: 16px; color: white; height: 100%; transition: transform 0.3s ease, box-shadow 0.3s ease; border: none; }
+    .summary-card:hover { transform: translateY(-8px); box-shadow: 0 12px 20px rgba(0,0,0,0.15); }
+    .card-dep { background: linear-gradient(135deg, #00b894 0%, #55efc4 100%); } 
+    .card-wit { background: linear-gradient(135deg, #ff7675 0%, #fab1a0 100%); } 
+    .card-bal { background: linear-gradient(135deg, #fdcb6e 0%, #ffeaa7 100%); color: #d35400; } 
+
+    .form-control, .form-select { border: 2px solid #dfe6e9; border-radius: 10px; padding: 10px; }
+    .form-control:focus, .form-select:focus { border-color: #74b9ff; box-shadow: 0 0 0 0.25rem rgba(116, 185, 255, 0.3); }
+    
+    .btn { border-radius: 10px; transition: 0.3s; font-weight: 600; padding: 10px 20px; }
+    .btn i { margin-right: 5px; }
+    .btn-deposit { background-color: #00b894; color: white; border: none; box-shadow: 0 4px 6px rgba(0, 184, 148, 0.3); }
+    .btn-deposit:hover { background-color: #00a884; color: white; transform: translateY(-2px); }
+    .btn-withdraw { background-color: #ff7675; color: white; border: none; box-shadow: 0 4px 6px rgba(255, 118, 117, 0.3); }
+    .btn-withdraw:hover { background-color: #d63031; color: white; transform: translateY(-2px); }
+    .btn-custom-light { background-color: #74b9ff; color: white; border: none; box-shadow: 0 4px 6px rgba(116, 185, 255, 0.3); }
+    .btn-custom-light:hover { background-color: #0984e3; color: white; }
+    .btn-custom-outline { border: 2px solid #a29bfe; color: #6c5ce7; background: white; }
+    .btn-custom-outline:hover { background-color: #a29bfe; color: white; }
+    
+    /* ปุ่มเปลี่ยนหน้า Pagination */
+    .btn-page { background-color: white; border: 2px solid #dfe6e9; color: #2d3436; padding: 5px 15px; border-radius: 8px; transition: 0.2s; font-weight: 500;}
+    .btn-page:hover:not(:disabled) { background-color: #74b9ff; color: white; border-color: #74b9ff;}
+    .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .login-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(45, 52, 54, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+    .login-box { background: var(--white); padding: 40px; border-radius: 20px; width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 4px solid #74b9ff; }
+    .login-box h4 { border: none; margin-bottom: 25px; color: #0984e3; background: transparent;}
+  </style>
+</head>
+<body>
+
+<div class="container main-container">
+  <h2 class="text-center mb-4">
+    <span style="font-size: 2.5rem;">🏫</span> ระบบฝาก-ถอนเงินนักเรียน ป.6 <br>
+    <small class="fs-5 text-muted fw-normal">ประจำปีการศึกษา 2569</small>
+  </h2>
+
+  <ul class="nav nav-tabs justify-content-center" id="myTab">
+    <li class="nav-item"><a class="nav-link active" onclick="switchTab('tab1')"><i class="bi bi-emoji-smile-fill"></i> ภาพรวมรายบุคคล</a></li>
+    <li class="nav-item"><a class="nav-link" onclick="checkAuthAndSwitch('tab2')"><i class="bi bi-star-fill text-warning"></i> สรุปห้อง</a></li>
+    <li class="nav-item"><a class="nav-link" onclick="checkAuthAndSwitch('tab3')"><i class="bi bi-piggy-bank-fill"></i> ฝากเงิน</a></li>
+    <li class="nav-item"><a class="nav-link" onclick="checkAuthAndSwitch('tab4')"><i class="bi bi-wallet-fill"></i> ถอนเงิน</a></li>
+    <li class="nav-item"><a class="nav-link" onclick="checkAuthAndSwitch('tab6')"><i class="bi bi-card-list"></i> ประวัติรวม</a></li>
+    <li class="nav-item"><a class="nav-link" onclick="checkAuthAndSwitch('tab5')"><i class="bi bi-person-hearts"></i> จัดการนักเรียน</a></li>
+  </ul>
+
+  <div id="tab1" class="content-section active">
+    <h4><i class="bi bi-bar-chart-fill"></i> ภาพรวมยอดเงินรายคน</h4>
+    <div class="table-responsive mt-3">
+      <table class="table table-custom table-striped text-center align-middle">
+        <thead><tr><th>รหัสประจำตัว</th><th>ชื่อ-นามสกุล</th><th>ยอดฝากสะสม (฿)</th><th>ยอดถอนสะสม (฿)</th><th>ยอดคงเหลือ (฿)</th></tr></thead>
+        <tbody id="summaryTable1"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tab2" class="content-section">
+    <h4><i class="bi bi-house-door-fill"></i> สรุปรายห้อง (Admin)</h4>
+    <div id="summaryCards2" class="row mb-4 text-center mt-3"></div>
+    <div class="table-responsive">
+      <table class="table table-custom table-striped text-center align-middle">
+        <thead><tr><th>รหัสประจำตัว</th><th>ชื่อ-นามสกุล</th><th>ยอดฝากสะสม (฿)</th><th>ยอดถอนสะสม (฿)</th><th>ยอดคงเหลือ (฿)</th></tr></thead>
+        <tbody id="summaryTable2"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tab3" class="content-section">
+    <h4><i class="bi bi-piggy-bank"></i> แบบฟอร์มบันทึกเงินฝาก</h4>
+    <div class="row bg-light p-4 rounded-4 mb-4 mx-0 mt-3" style="border: 2px dashed #55efc4;">
+      <div class="col-md-3 mb-3"><label class="fw-bold text-success mb-1">วันที่ฝากเงิน</label><input type="date" id="depDate" class="form-control"></div>
+      <div class="col-md-3 mb-3"><label class="fw-bold text-success mb-1">จำนวนเงิน (บาท)</label><input type="number" id="depAmount" class="form-control" placeholder="0.00"></div>
+      <div class="col-md-3 mb-3"><label class="fw-bold text-success mb-1">ผู้ฝาก</label><select id="depStudent" class="form-select student-dropdown"></select></div>
+      <div class="col-md-3 mb-3"><label class="fw-bold text-success mb-1">หมายเหตุ</label><input type="text" id="depNote" class="form-control" placeholder="ถ้ามี..."></div>
+      <div class="col-12 text-center mt-3">
+        <button class="btn btn-deposit px-4 me-2" onclick="saveTrans('ฝาก')"><i class="bi bi-cloud-arrow-up-fill"></i> บันทึกการฝากเงิน</button>
+        <button class="btn btn-custom-outline px-4" onclick="openSheet()"><i class="bi bi-file-earmark-spreadsheet"></i> แสดง Google Sheet</button>
+      </div>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center mb-2 mt-4">
+      <h6 class="text-success fw-bold mb-0"><i class="bi bi-clock-history"></i> รายการฝากเงิน (ทั้งหมด)</h6>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-custom text-center align-middle mb-0">
+        <thead style="background-color: #00b894 !important;"><tr><th>บันทึกเมื่อ</th><th>วันที่ทำรายการ</th><th>ประเภท</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>จำนวนเงิน</th><th>หมายเหตุ</th></tr></thead>
+        <tbody id="depTable"></tbody>
+      </table>
+    </div>
+    <div id="pag-dep" class="d-flex justify-content-between align-items-center mt-3 bg-light p-2 rounded-3 border"></div>
+  </div>
+
+  <div id="tab4" class="content-section">
+    <h4><i class="bi bi-cash-stack"></i> แบบฟอร์มบันทึกการถอนเงิน</h4>
+    <div class="row bg-light p-4 rounded-4 mb-4 mx-0 mt-3" style="border: 2px dashed #fab1a0;">
+      <div class="col-md-3 mb-3"><label class="fw-bold text-danger mb-1">วันที่ถอนเงิน</label><input type="date" id="witDate" class="form-control"></div>
+      <div class="col-md-3 mb-3"><label class="fw-bold text-danger mb-1">จำนวนเงิน (บาท)</label><input type="number" id="witAmount" class="form-control" placeholder="0.00"></div>
+      <div class="col-md-3 mb-3"><label class="fw-bold text-danger mb-1">ผู้ถอน</label><select id="witStudent" class="form-select student-dropdown"></select></div>
+      <div class="col-md-3 mb-3"><label class="fw-bold text-danger mb-1">หมายเหตุ</label><input type="text" id="witNote" class="form-control" placeholder="ถ้ามี..."></div>
+      <div class="col-12 text-center mt-3">
+        <button class="btn btn-withdraw px-4 me-2" onclick="saveTrans('ถอน')"><i class="bi bi-cloud-arrow-up-fill"></i> บันทึกการถอนเงิน</button>
+        <button class="btn btn-custom-outline px-4" onclick="openSheet()"><i class="bi bi-file-earmark-spreadsheet"></i> แสดง Google Sheet</button>
+      </div>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center mb-2 mt-4">
+      <h6 class="text-danger fw-bold mb-0"><i class="bi bi-clock-history"></i> รายการถอนเงิน (ทั้งหมด)</h6>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-custom text-center align-middle mb-0">
+        <thead style="background-color: #ff7675 !important;"><tr><th>บันทึกเมื่อ</th><th>วันที่ทำรายการ</th><th>ประเภท</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>จำนวนเงิน</th><th>หมายเหตุ</th></tr></thead>
+        <tbody id="witTable"></tbody>
+      </table>
+    </div>
+    <div id="pag-wit" class="d-flex justify-content-between align-items-center mt-3 bg-light p-2 rounded-3 border"></div>
+  </div>
+
+  <div id="tab6" class="content-section">
+    <h4><i class="bi bi-card-checklist"></i> ประวัติการทำรายการ</h4>
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+      <h5 class="text-primary fw-bold mb-0">รายการทั้งหมดในระบบ</h5>
+      <div>
+        <button class="btn btn-custom-light btn-sm me-2" onclick="loadAllTransactions()"><i class="bi bi-arrow-clockwise"></i> รีเฟรช</button>
+        <button class="btn btn-custom-outline btn-sm" onclick="openSheet()"><i class="bi bi-file-earmark-spreadsheet"></i> เปิด Sheet</button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-custom text-center align-middle mb-0">
+        <thead style="background-color: #a29bfe !important;">
+          <tr><th>บันทึกเมื่อ</th><th>วันที่ทำรายการ</th><th>ประเภท</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>จำนวนเงิน</th><th>หมายเหตุ</th></tr>
+        </thead>
+        <tbody id="allTransTable"></tbody>
+      </table>
+    </div>
+    <div id="pag-all" class="d-flex justify-content-between align-items-center mt-3 bg-light p-2 rounded-3 border"></div>
+  </div>
+
+  <div id="tab5" class="content-section">
+    <h4><i class="bi bi-person-lines-fill"></i> ข้อมูลนักเรียน</h4>
+    <div class="row bg-light p-4 rounded-4 mb-4 mx-0 mt-3 align-items-end" style="border: 2px dashed #74b9ff;">
+      <h5 class="text-primary mb-3"><i class="bi bi-person-plus-fill"></i> เพิ่มนักเรียนใหม่</h5>
+      <div class="col-md-4 mb-3"><label class="fw-bold text-primary mb-1">รหัสประจำตัว</label><input type="text" id="stuId" class="form-control" placeholder="รหัส..."></div>
+      <div class="col-md-5 mb-3"><label class="fw-bold text-primary mb-1">ชื่อ-นามสกุล</label><input type="text" id="stuName" class="form-control" placeholder="ชื่อ-สกุล..."></div>
+      <div class="col-md-3 mb-3 text-center"><button class="btn btn-deposit w-100" onclick="addStudent()">เพิ่มข้อมูล</button></div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-custom text-center align-middle">
+        <thead><tr><th width="25%">รหัส</th><th width="45%">ชื่อ-นามสกุล</th><th width="30%">จัดการ</th></tr></thead>
+        <tbody id="stuTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <h4><i class="bi bi-key-fill text-warning fs-2"></i><br>Admin Login</h4>
+    <input type="text" id="username" class="form-control mb-3" placeholder="Username">
+    <input type="password" id="password" class="form-control mb-4" placeholder="Password">
+    <button class="btn btn-custom-light w-100 mb-2 fs-5" onclick="login()">เข้าสู่ระบบ</button>
+    <button class="btn btn-light w-100 text-muted" onclick="cancelLogin()">ยกเลิก</button>
+  </div>
+</div>
+
+<script>
+  let isLoggedIn = false;
+  let targetTab = '';
+
+  // 🌟 ตัวแปรสำหรับระบบแบ่งหน้า (Pagination)
+  const ITEMS_PER_PAGE = 15;
+  let pageData = {
+    'ฝาก': { data: [], currentPage: 1, tbodyId: 'depTable', pagId: 'pag-dep', emptyMsg: 'ยังไม่มีรายการฝากเงิน' },
+    'ถอน': { data: [], currentPage: 1, tbodyId: 'witTable', pagId: 'pag-wit', emptyMsg: 'ยังไม่มีรายการถอนเงิน' },
+    'all': { data: [], currentPage: 1, tbodyId: 'allTransTable', pagId: 'pag-all', emptyMsg: 'ยังไม่มีรายการใดๆ ในระบบ' }
+  };
+
+  function formatNumber(num) {
+    if (isNaN(num) || num === '') return num;
+    return Number(num).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  function setTodayDate(inputId) {
+    const today = new Date();
+    const offset = today.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
+    document.getElementById(inputId).value = localISOTime;
+  }
+
+  window.onload = function() {
+    loadSummary();
+    updateStudentDropdowns();
+    setTodayDate('depDate');
+    setTodayDate('witDate');
+    loadTrans('ฝาก');
+    loadTrans('ถอน');
+
+    document.getElementById('password').addEventListener('keypress', function (e) { if (e.key === 'Enter') login(); });
+    document.getElementById('username').addEventListener('keypress', function (e) { if (e.key === 'Enter') login(); });
+  };
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    event.target.classList.add('active');
+    
+    if(tabId === 'tab1' || tabId === 'tab2') loadSummary();
+    if(tabId === 'tab5') loadStudents(); 
+    if(tabId === 'tab3') loadTrans('ฝาก');
+    if(tabId === 'tab4') loadTrans('ถอน');
+    if(tabId === 'tab6') loadAllTransactions();
+  }
+
+  function checkAuthAndSwitch(tabId) {
+    if (isLoggedIn) { switchTab(tabId); } else { targetTab = tabId; document.getElementById('loginOverlay').style.display = 'flex'; }
+  }
+
+  function login() {
+    let u = document.getElementById('username').value;
+    let p = document.getElementById('password').value;
+    if (u === 'admin' && p === '113333555555') {
+      isLoggedIn = true;
+      document.getElementById('loginOverlay').style.display = 'none';
+      Swal.fire({ icon: 'success', title: 'สำเร็จ!', timer: 1000, showConfirmButton: false });
+      switchTab(targetTab);
+    } else { Swal.fire({ icon: 'error', title: 'รหัสผิด!' }); }
+  }
+
+  function cancelLogin() { document.getElementById('loginOverlay').style.display = 'none'; }
+  function showLoading(text) { Swal.fire({ title: text || 'กำลังโหลด...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } }); }
+
+  function loadSummary() {
+    google.script.run.withSuccessHandler(function(data) {
+      let html = '';
+      data.students.forEach(s => {
+        html += `<tr><td><span class="badge bg-light text-dark border">${s.id}</span></td><td class="fw-bold">${s.name}</td><td class="text-success">${formatNumber(s.deposit)}</td><td class="text-danger">${formatNumber(s.withdraw)}</td><td class="text-primary fw-bold">${formatNumber(s.balance)}</td></tr>`;
+      });
+      document.getElementById('summaryTable1').innerHTML = html;
+      document.getElementById('summaryTable2').innerHTML = html;
+      let cardHtml = `
+        <div class="col-md-4 mb-3"><div class="summary-card card-dep"><i class="bi bi-piggy-bank fs-1"></i><br>ฝากรวม: ฿ ${formatNumber(data.classTotal.deposit)}</div></div>
+        <div class="col-md-4 mb-3"><div class="summary-card card-wit"><i class="bi bi-cart-dash fs-1"></i><br>ถอนรวม: ฿ ${formatNumber(data.classTotal.withdraw)}</div></div>
+        <div class="col-md-4 mb-3"><div class="summary-card card-bal"><i class="bi bi-wallet2 fs-1"></i><br>คงเหลือ: ฿ ${formatNumber(data.classTotal.balance)}</div></div>`;
+      document.getElementById('summaryCards2').innerHTML = cardHtml;
+    }).getSummaryData();
+  }
+
+  function loadStudents() {
+    showLoading();
+    google.script.run.withSuccessHandler(function(data) {
+      Swal.close();
+      let html = '';
+      data.forEach(row => { 
+        html += `<tr><td><span class="badge bg-info">${row[0]}</span></td><td><input type="text" id="editName_${row[0]}" class="form-control text-center" value="${row[1]}"></td>
+                 <td><button class="btn btn-warning btn-sm me-1 text-dark" onclick="inlineEdit('${row[0]}')">บันทึก</button>
+                     <button class="btn btn-danger btn-sm" onclick="inlineDelete('${row[0]}')">ลบ</button></td></tr>`; 
+      });
+      document.getElementById('stuTable').innerHTML = html;
+    }).getStudents();
+  }
+
+  function addStudent() {
+    let id = document.getElementById('stuId').value;
+    let name = document.getElementById('stuName').value;
+    if (!id || !name) return;
+    showLoading();
+    google.script.run.withSuccessHandler(function() {
+      Swal.fire('สำเร็จ', 'เพิ่มนักเรียนแล้ว', 'success');
+      document.getElementById('stuId').value = ''; document.getElementById('stuName').value = '';
+      updateStudentDropdowns(); loadStudents();
+    }).saveStudent(id, name, 'add');
+  }
+
+  function inlineEdit(id) {
+    let name = document.getElementById('editName_' + id).value;
+    google.script.run.withSuccessHandler(function() { Swal.fire('สำเร็จ', 'แก้ไขแล้ว', 'success'); updateStudentDropdowns(); }).saveStudent(id, name, 'edit');
+  }
+
+  function inlineDelete(id) {
+    Swal.fire({ title: 'ลบชื่อ?', icon: 'warning', showCancelButton: true }).then((r) => {
+      if (r.isConfirmed) { google.script.run.withSuccessHandler(function() { loadStudents(); updateStudentDropdowns(); }).saveStudent(id, '', 'delete'); }
+    });
+  }
+
+  function updateStudentDropdowns() {
+    google.script.run.withSuccessHandler(function(data) {
+      let options = '<option value="">-- เลือกนักเรียน --</option>';
+      data.forEach(row => { options += `<option value="${row[0]}">${row[0]} : ${row[1]}</option>`; });
+      document.querySelectorAll('.student-dropdown').forEach(el => el.innerHTML = options);
+    }).getStudents();
+  }
+
+  function saveTrans(type) {
+    let p = type === 'ฝาก' ? 'dep' : 'wit';
+    let d = document.getElementById(p + 'Date').value;
+    let a = document.getElementById(p + 'Amount').value;
+    let s = document.getElementById(p + 'Student').value;
+    let n = document.getElementById(p + 'Note').value;
+    if (!d || !a || !s) return;
+    showLoading('กำลังบันทึก...');
+    google.script.run.withSuccessHandler(function() {
+      Swal.fire('สำเร็จ', 'บันทึกเรียบร้อย', 'success');
+      document.getElementById(p + 'Amount').value = ''; document.getElementById(p + 'Note').value = '';
+      loadTrans(type); loadSummary();
+    }).saveTransaction(d, type, s, a, n);
+  }
+
+  // 🌟 ฟังก์ชันเรนเดอร์ข้อมูลและสร้างปุ่มแบ่งหน้า
+  function renderPaginatedTable(type) {
+    let config = pageData[type];
+    let totalItems = config.data.length;
+    let totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+
+    if (config.currentPage < 1) config.currentPage = 1;
+    if (config.currentPage > totalPages) config.currentPage = totalPages;
+
+    let startIndex = (config.currentPage - 1) * ITEMS_PER_PAGE;
+    let endIndex = startIndex + ITEMS_PER_PAGE;
+    let itemsToShow = config.data.slice(startIndex, endIndex);
+
+    let html = '';
+    if (totalItems === 0) { 
+      html = `<tr><td colspan="7" class="text-muted py-4">${config.emptyMsg}</td></tr>`; 
+      document.getElementById(config.pagId).innerHTML = ''; 
+    } else {
+      itemsToShow.forEach(row => {
+        let ts = row[0] ? new Date(row[0]).toLocaleString('th-TH') : '-';
+        let dt = row[1] ? new Date(row[1]).toLocaleDateString('th-TH') : '-';
+        
+        if(type === 'all') {
+          let col = row[2] === 'ฝาก' ? 'bg-success' : 'bg-danger';
+          let txtCol = row[2] === 'ฝาก' ? 'text-success' : 'text-danger';
+          html += `<tr><td class="small text-muted">${ts}</td><td>${dt}</td><td><span class="badge ${col}">${row[2]}</span></td><td>${row[3]}</td><td>${row[4]}</td><td class="fw-bold ${txtCol}">${formatNumber(row[5])}</td><td class="text-muted">${row[6] || '-'}</td></tr>`;
+        } else {
+          html += `<tr><td class="small text-muted">${ts}</td><td>${dt}</td><td><span class="badge ${type === 'ฝาก' ? 'bg-success' : 'bg-danger'}">${row[2]}</span></td><td>${row[3]}</td><td>${row[4]}</td><td class="fw-bold ${type === 'ฝาก' ? 'text-success' : 'text-danger'}">${formatNumber(row[5])}</td><td class="text-muted">${row[6] || '-'}</td></tr>`;
+        }
+      });
+
+      let prevDisabled = config.currentPage === 1 ? 'disabled' : '';
+      let nextDisabled = config.currentPage === totalPages ? 'disabled' : '';
+      
+      let pagHtml = `
+        <button class="btn-page" ${prevDisabled} onclick="changePage('${type}', -1)"><i class="bi bi-chevron-left"></i> ก่อนหน้า</button>
+        <span class="fw-bold text-muted">หน้า ${config.currentPage} จาก ${totalPages} <span class="fw-normal fs-6">(รวม ${totalItems} รายการ)</span></span>
+        <button class="btn-page" ${nextDisabled} onclick="changePage('${type}', 1)">ถัดไป <i class="bi bi-chevron-right"></i></button>
+      `;
+      document.getElementById(config.pagId).innerHTML = pagHtml;
+    }
+    
+    document.getElementById(config.tbodyId).innerHTML = html;
+  }
+
+  function changePage(type, direction) {
+    pageData[type].currentPage += direction;
+    renderPaginatedTable(type);
+  }
+
+  function loadTrans(type) {
+    let prefix = type === 'ฝาก' ? 'dep' : 'wit';
+    document.getElementById(prefix + 'Table').innerHTML = `<tr><td colspan="7" class="text-muted py-4"><div class="spinner-border text-primary spinner-border-sm"></div> กำลังดึงข้อมูล...</td></tr>`;
+    document.getElementById('pag-' + prefix).innerHTML = ''; 
+
+    google.script.run.withSuccessHandler(function(data) {
+      pageData[type].data = data ? data.reverse() : [];
+      pageData[type].currentPage = 1; 
+      renderPaginatedTable(type);
+    }).getTransactionsData(type);
+  }
+
+  function loadAllTransactions() {
+    document.getElementById('allTransTable').innerHTML = `<tr><td colspan="7" class="text-muted py-4"><div class="spinner-border text-primary spinner-border-sm"></div> กำลังดึงข้อมูล...</td></tr>`;
+    document.getElementById('pag-all').innerHTML = ''; 
+
+    google.script.run.withSuccessHandler(function(data) {
+      pageData['all'].data = data ? data.reverse() : [];
+      pageData['all'].currentPage = 1; 
+      renderPaginatedTable('all');
+    }).getAllTransactions();
+  }
+
+  function openSheet() { google.script.run.withSuccessHandler(function(u) { window.open(u, '_blank'); }).getSheetUrl(); }
+</script>
+</body>
+</html>
